@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="משחק דיג בדפדפן: כנרת, ים, ירקון וירדן. פיזיקת דיג, 15 סוגי דגים, מוזיקה מזרחית וחסידית, ושולחן שבת בסוף.">
+<meta name="description" content="משחק דיג בדפדפן: כנרת, ים, ירקון וירדן.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="חכה לשבת · משחק דיג">
-<meta property="og:description" content="כנרת, ים, ירקון וירדן. דג כשר ליוסף מוקיר שבת, ואולי גם מרגלית בבטן הדג. בחינם, בלי התקנה.">
-<meta property="og:image" content="https://vizel014.github.io/hakhaleshabat/screenshots/03-fight-carp.png">
+<meta property="og:description" content="כנרת, ים, ירקון וירדן. בחינם, בלי התקנה.">
+<meta property="og:image" content="https://vizel014.github.io/hakhaleshabat/screenshots/05-yosef-mokir-shabbat.png">
 <meta property="og:url" content="https://vizel014.github.io/hakhaleshabat/">
 <meta name="twitter:card" content="summary_large_image">
 <title>חכה לשבת</title>
@@ -138,6 +138,10 @@ button:focus-visible,.btn:focus-visible,.loc:focus-visible{outline:2px solid var
 .songrow .btn{margin:0;font-size:15px;padding:8px 16px}
 .gear{width:100%;height:auto;aspect-ratio:460/120;max-width:100%;border-radius:6px;display:block;margin:6px 0 4px}
 .gearnames{font-size:13px;color:var(--gold);margin:0 0 8px;line-height:1.4}
+.how{list-style:none;counter-reset:s;display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 6px;padding:0}
+.how li{counter-increment:s;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid var(--edge);border-radius:6px;padding:8px 12px;font-size:15px}
+.how li::before{content:counter(s);display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--bob);color:#1d0c06;font-weight:800;font-size:13px}
+.howmore{font-size:13px!important;color:var(--muted)!important;margin:0 0 14px!important}
 .table-img{width:100%;height:auto;border-radius:6px;margin:4px 0 12px;display:block}
 .sel{font:600 15px var(--body);background:#0b1626;color:var(--cream);border:1px solid var(--edge);border-radius:4px;padding:7px 10px;max-width:100%}
 .sel:focus-visible{outline:2px solid var(--bob);outline-offset:2px}
@@ -849,8 +853,8 @@ function hookFish(f) {
   L = dist(tip, hook) + 2;
   st = 'hooked'; overT = 0; slackT = 0; fightT = 0;
   f.ang = Math.atan2(hook.y - tip.y, hook.x - tip.x);
-  if (SP[f.sp].teeth) { toast(`${SP[f.sp].name}! השיניים שוחקות את החוט`, 2200, 'bad'); addShake(SP[f.sp].boss ? 10 : 5); }
-  else toast(f.golden ? 'דג זהב על החכה!' : 'דג על החכה!', 1300, f.golden ? 'gold' : 'good');
+  if (SP[f.sp].teeth) { toast(`${SP[f.sp].name}!`, 1400, 'bad'); addShake(SP[f.sp].boss ? 10 : 5); }
+  else if (f.golden) toast('דג זהב!', 1300, 'gold');
   splash(hook.x, 0.7); sfx.splash(0.6); addShake(4);
 }
 function fightAI(dt) {
@@ -917,7 +921,7 @@ function maybePredator(dt) {
     const fromRight = hook.x < Math.min(VW, farX) * 0.6 && !isRiver();
     pred = { f: g, x: fromRight ? VW + 120 : hook.x + rand(-80, 80), y: fromRight ? clamp(hook.y + 60, SURF + 30, bottomAt(VW - 40) - 20) : bottomAt(hook.x) - 20, st: 'warn', t: 1.6, fs: fromRight ? -1 : 1, tilt: 0 };
     g.x = pred.x; g.y = pred.y;
-    toast('טורף מתקרב!', 1500, 'bad'); sfx.alarm(); predCD = 25;
+    toast('טורף!', 1200, 'bad'); sfx.alarm(); predCD = 25;
   }
 }
 function updatePred(dt) {
@@ -944,7 +948,7 @@ function updatePred(dt) {
     f.ra = Math.atan2(hook.y - tip.y, hook.x - tip.x) + 0.5; f.ang = f.ra;
     fishes.push(f); hooked = f; hook.w = 1 / (0.03 + f.kg);
     for (let i = 0; i < 24; i++) bubbles.push({ x: hook.x + rand(-30, 30), y: hook.y + rand(-20, 20), r: rand(1.5, 4), p: rand(0, 6) });
-    toast(`${SP[f.sp].name} בלע את ה${SP[old.sp].name}!`, 2200, 'bad');
+    toast(`${SP[f.sp].name}!`, 1400, 'bad');
     addShake(14); flash = 0.35; sfx.chomp(); pred = null; fightT = 0;
   }
 }
@@ -1021,7 +1025,7 @@ function press() {
       if (engaged.st === 'bite') hookFish(engaged);
       else if (engaged.st === 'nibble') {
         if (Math.random() < 0.4) hookFish(engaged);
-        else { toast('מוקדם מדי, הדג נבהל', 1400, 'bad'); releaseFish(engaged, true); }
+        else { toast('מוקדם מדי', 1100, 'bad'); releaseFish(engaged, true); }
       }
     }
   }
@@ -1112,7 +1116,7 @@ const MZ = { C4: 60, D4: 62, Eb4: 63, Eqb4: 63.5, F4: 65, Fs4: 66, G4: 67, A4: 6
 const mzParse = str => str.trim().split(/\s+/).map(tok => { const [n, l] = tok.split(':'); return [MZ[n], +(l || 1)]; });
 const RHYTHM = { maqsum: 'DT.TD.T.', baladi: 'DD.TD.T.', ayoub: 'D.kDT.k.' };
 const TRACKS = [
-  { name: 'ניגון חסידי', kind: 'niggun' },
+  { name: 'ניגון שקט', kind: 'niggun' },
   { name: 'ערב שבת · מקאם חיג׳אז', kind: 'mz', bpm: 100, tonic: 50, drum: 'maqsum', secs: ['A', 'A', 'B', 'A'],
     A: 'D4 Eb4 Fs4 G4 A4:2 Bb4 A4  G4:2 A4 G4 Fs4:2 Eb4 Fs4  G4 A4 Bb4 C5 D5:2 C5 Bb4  A4 G4 Fs4 Eb4 D4:4',
     B: 'A4 D5 D5 Eb5 D5:2 C5 Bb4  C5:2 Bb4 A4 Bb4:2 A4 G4  A4 Bb4 C5 Bb4 A4 G4 Fs4 G4  A4:6 Fs4 Eb4' },
@@ -1128,7 +1132,7 @@ const music = { on: true, track: 0, next: 0, sec: 0, idx: 0, pos: 0, prev: null,
 try { const v = JSON.parse(localStorage.getItem(MUSIC_KEY)); if (v === 'off') music.on = false; else if (TRACKS[v]) music.track = v; } catch (e) { /* storage blocked */ }
 let mbus = null, noiseBuf = null;
 const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
-function musicBus() { if (!mbus) { mbus = AC.createGain(); mbus.gain.value = music.on ? 0.5 : 0; mbus.connect(AC.destination); } return mbus; }
+function musicBus() { if (!mbus) { mbus = AC.createGain(); mbus.gain.value = music.on ? 0.38 : 0; mbus.connect(AC.destination); } return mbus; }
 function mvoice(type, m, t, dur, gain, cutoff, vib) {
   const o = AC.createOscillator(), g = AC.createGain(), f = AC.createBiquadFilter();
   o.type = type; o.frequency.setValueAtTime(mtof(m), t);
@@ -1154,7 +1158,7 @@ function mkick(t, gain, f0 = 110, f1 = 45, len = 0.18) {
 // darbuka: dum (low), tek (sharp rim), ka (soft rim)
 function mdrum(sym, t) {
   if (sym === 'D') { mkick(t, 0.32, 100, 52, 0.3); mdrumNoise(t, 0.04, 'lowpass', 300, 0.7, 0.12); }
-  else if (sym === 'T') mdrumNoise(t, 0.07, 'bandpass', 3800, 1.6, 0.17);
+  else if (sym === 'T') mdrumNoise(t, 0.06, 'bandpass', 3400, 1.6, 0.11);
   else if (sym === 'k') mdrumNoise(t, 0.05, 'bandpass', 3000, 1.6, 0.08);
 }
 // oud and qanun: a bright pluck that darkens as it decays
@@ -1168,7 +1172,7 @@ function mpluck(n, t, gain) {
 // kamanja-style lead that slides into each note
 function mlead(n, t, dur, prev) {
   const fr = mtof(n), pf = prev ? mtof(prev) : fr, g = AC.createGain(), f = AC.createBiquadFilter();
-  f.type = 'lowpass'; f.frequency.value = 2600; f.Q.value = 0.8;
+  f.type = 'lowpass'; f.frequency.value = 1900; f.Q.value = 0.7;
   const l = AC.createOscillator(), lg = AC.createGain();
   l.frequency.value = 6; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(fr * 0.01, t + Math.min(0.3, dur)); l.connect(lg);
   for (const det of [-6, 6]) {
@@ -1176,25 +1180,44 @@ function mlead(n, t, dur, prev) {
     o.frequency.setValueAtTime(pf, t); o.frequency.exponentialRampToValueAtTime(fr, t + Math.min(0.08, dur * 0.3));
     lg.connect(o.frequency); o.connect(f); o.start(t); o.stop(t + dur + 0.06);
   }
-  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.03, t + 0.05);
-  g.gain.setValueAtTime(0.03, t + dur * 0.8); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.04);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.022, t + 0.06);
+  g.gain.setValueAtTime(0.022, t + dur * 0.8); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.04);
   f.connect(g); g.connect(musicBus()); l.start(t); l.stop(t + dur + 0.06);
 }
+/* a calm, slow niggun in D minor, 3/4: a soft hummed lead over a gentle waltz */
+const CN = { Cs4: 61, D4: 62, E4: 64, F4: 65, G4: 67, A4: 69, Bb4: 70, C5: 72, Cs5: 73, D5: 74, E5: 76, F5: 77 };
+const CALM_CH = { Dm: [38, [50, 53, 57]], Gm: [43, [55, 58, 62]], A: [45, [52, 57, 61]] };
+const CALM = [
+  { m: 'A4:2 D5:2 C5 Bb4  A4:4 G4 A4  Bb4:2 A4:2 G4 F4  E4:4 D4 E4  F4:2 G4:2 A4 Bb4  A4:3 G4 F4 E4  F4:2 E4:2 Cs4 E4  D4:6', c: 'Dm Dm Gm A Dm Gm A Dm' },
+  { m: 'D5:2 F5:2 E5 D5  Cs5:4 A4:2  Bb4:2 D5:2 C5 Bb4  A4:6  G4:2 Bb4:2 A4 G4  F4:3 E4 F4 G4  A4:2 G4:2 E4 Cs4  D4:6', c: 'Dm A Gm Dm Gm Dm A Dm' },
+].map(t => ({ m: t.m.trim().split(/\s+/).map(tok => { const [n, l] = tok.split(':'); return [CN[n], +(l || 1)]; }), c: t.c.split(' ') }));
+const CALM_ORDER = [0, 0, 1, 1];
+// warm hummed voice: sine and triangle together, slow attack, vibrato that arrives late
+function msoft(n, t, dur) {
+  const fr = mtof(n), g = AC.createGain(), f = AC.createBiquadFilter(), l = AC.createOscillator(), lg = AC.createGain();
+  f.type = 'lowpass'; f.frequency.value = 1500;
+  l.frequency.value = 4.8; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(fr * 0.007, t + Math.min(0.6, dur)); l.connect(lg);
+  for (const [type, lvl] of [['sine', 1], ['triangle', 0.5]]) {
+    const o = AC.createOscillator(), og = AC.createGain(); o.type = type; o.frequency.setValueAtTime(fr, t); og.gain.value = lvl;
+    lg.connect(o.frequency); o.connect(og); og.connect(f); o.start(t); o.stop(t + dur + 0.15);
+  }
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.045, t + 0.09);
+  g.gain.setValueAtTime(0.045, t + dur * 0.7); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.12);
+  f.connect(g); g.connect(musicBus()); l.start(t); l.stop(t + dur + 0.15);
+}
 function niggunTick(now) {
-  const bpm = (st === 'hooked' ? 148 : 124) + stormK * 12, e = 60 / bpm / 2;
+  const bpm = st === 'hooked' ? 90 : 76, e = 60 / bpm / 2;
   while (music.next < now + 0.3) {
-    const sec = TUNE[ORDER[music.sec % ORDER.length]], [n, len] = sec.m[music.idx], t = music.next;
-    if (len >= 2) { mvoice('square', n + 1, t, e * 0.14, 0.03, 1700); mvoice('square', n, t + e * 0.12, len * e * 0.9, 0.04, 1700 + (st === 'hooked' ? 600 : 0), true); }
-    else mvoice('square', n, t, e * 0.92, 0.04, 1700 + (st === 'hooked' ? 600 : 0), false);
+    const part = CALM[CALM_ORDER[music.sec % CALM_ORDER.length]], [n, len] = part.m[music.idx], t = music.next;
+    msoft(n, t, len * e * 0.98);
     for (let k = 0; k < len; k++) {
-      const p = music.pos + k, bar = Math.floor(p / 4) % sec.c.length, sub = p % 4, tt = t + k * e;
-      const [root, ch] = CHORD[sec.c[bar]];
-      if (sub === 0) { mvoice('triangle', root, tt, e * 1.6, 0.13, 700); mkick(tt, 0.22); }
-      else if (sub === 2) { mvoice('triangle', root + 7, tt, e * 1.6, 0.1, 700); mkick(tt, 0.12); }
-      else { for (const cn of ch) mvoice('sawtooth', cn, tt, e * 0.55, 0.011, 1300); mdrumNoise(tt, 0.05, 'highpass', 6000, 0.7, 0.05); }
+      const p = music.pos + k, bar = Math.floor(p / 6) % part.c.length, sub = p % 6, tt = t + k * e;
+      const [root, ch] = CALM_CH[part.c[bar]];
+      if (sub === 0) mvoice('sine', root, tt, e * 2.6, 0.12, 500);
+      else if (sub === 2 || sub === 4) for (const cn of ch) mvoice('triangle', cn, tt, e * 1.5, 0.011, 900);
     }
     music.pos += len; music.next += len * e; music.idx++;
-    if (music.idx >= sec.m.length) { music.idx = 0; music.pos = 0; music.sec = (music.sec + 1) % ORDER.length; }
+    if (music.idx >= part.m.length) { music.idx = 0; music.pos = 0; music.sec = (music.sec + 1) % CALM_ORDER.length; }
   }
 }
 function mizrahiTick(tr, now) {
@@ -1207,7 +1230,7 @@ function mizrahiTick(tr, now) {
     for (let k = 0; k < len; k++) {
       const p = music.pos + k, step = p % 8, tt = t + k * e;
       mdrum(RHYTHM[tr.drum][step], tt);
-      mdrumNoise(tt + e / 2, 0.025, 'highpass', 8000, 0.7, 0.022);       // riq jingles
+      mdrumNoise(tt + e / 2, 0.02, 'highpass', 8000, 0.7, 0.01);       // riq jingles
       if (step === 0) mpluck(tr.tonic, tt, 0.09);
       else if (step === 4) mpluck(tr.tonic + 7, tt, 0.06);
     }
@@ -1242,7 +1265,7 @@ function setTrack(v) {
   ensureAudio(); stopOwn();
   if (v === 'off') music.on = false; else { music.on = true; music.track = v; }
   music.sec = 0; music.idx = 0; music.pos = 0; music.prev = null; music.next = 0;
-  if (AC) musicBus().gain.setTargetAtTime(music.on ? 0.5 : 0, AC.currentTime, 0.05);
+  if (AC) musicBus().gain.setTargetAtTime(music.on ? 0.38 : 0, AC.currentTime, 0.05);
   if (music.on && v === 'own') playOwn();
   try { localStorage.setItem(MUSIC_KEY, JSON.stringify(v === 'own' ? 0 : v)); } catch (e) { /* storage blocked */ }
   updMusicBtn();
@@ -1280,7 +1303,7 @@ function update(dt) {
 
   if (st === 'fly') {
     if (bob.x > Math.min(VW, farX) - 70 && !flyLock) { flyLock = true; L = dist(tip, bob); }
-    if (bob.x < SHORE && bob.y > SURF - 36) { resetRig(); toast('קצר מדי, טענו חזק יותר', 1500, 'bad'); }
+    if (bob.x < SHORE && bob.y > SURF - 36) { resetRig(); toast('קצר מדי', 1100, 'bad'); }
     else if (bob.y > surfAt(bob.x) - 3) {
       st = 'water'; sinceLand = 0; L = dist(tip, bob) + 4;
       const v = vel(bob), sp = Math.hypot(v.x, v.y);
@@ -1293,7 +1316,7 @@ function update(dt) {
     leader += clamp(target - leader, -240 * dt, 200 * dt);
     if (!junk && !junkTried && pressed && !engaged && L > 200 && hook.y >= bottomAt(hook.x) - 6) {
       junkTried = true;
-      if (Math.random() < 0.14) { junk = pickJunk(); bait = false; toast('משהו נתפס בקרקעית...', 1500); sfx.plop(); }
+      if (Math.random() < 0.14) { junk = pickJunk(); bait = false; sfx.plop(); }
     }
     if (L <= 95) { st = 'ready'; L = 70; bait = true; leader = 12; if (engaged) releaseFish(engaged, false); if (junk) landJunk(); }
   }
@@ -1325,7 +1348,7 @@ function update(dt) {
   if (pearlFx) {
     pearlFx.t += dt;
     if (!pearlFx.shown && pearlFx.t > 0.7) {
-      pearlFx.shown = true; toast('מרגלית בבטן הדג! +400 ₪', 2200, 'gold'); sfx.gold(); flash = Math.max(flash, 0.3);
+      pearlFx.shown = true; toast('מרגלית! +400 ₪', 1800, 'gold'); sfx.gold(); flash = Math.max(flash, 0.3);
       for (let i = 0; i < 24; i++) sparks.push({ x: tip.x + rand(-30, 50), y: tip.y + rand(20, 100), t: rand(-0.3, 0) });
     }
   }
@@ -1389,7 +1412,7 @@ function escapeFish() {
   const f = hooked; hooked = null; releaseFish(f, true);
   hook.w = 1 / 0.03; st = 'water'; bait = false; L = dist(tip, bob) + 10;
   combo = 1; bumpCombo();
-  toast('הדג השתחרר, החוט היה רפוי', 1600, 'bad');
+  toast('הדג השתחרר', 1300, 'bad');
 }
 function landFish(f) {
   hooked = null; landed = f; landT = 0; st = 'landed';
@@ -1411,18 +1434,15 @@ function landFish(f) {
   if (f.golden || sp.boss) sfx.gold(); else sfx.win();
   pearlFx = pearl ? { t: 0 } : null;
   speech = []; talk = null;
-  say('ברוך ה׳!', 1.5);
-  if (pearl) say('מאן דיזיף שבתא, פרעיה שבתא!', 2.8);
-  else if (sp.kosher && (!saidYosef || f.golden || f.kg >= 5)) { say('זה ליוסף מוקיר שבת', 2.2); saidYosef = true; }
-  else if (!sp.kosher && !saidMarket) { say('את זה נמכור בשוק', 1.8); saidMarket = true; }
-  toast(`${f.golden ? 'דג זהב! ' : ''}${sp.name}<small class="num">${f.kg.toFixed(2)} ק״ג${sold ? ' · +' + sold + ' ₪' : ''}</small><span class="k${sp.kosher ? '' : ' no'}">${sp.kosher ? 'לשבת' : 'לשוק'}</span>`, 2000, f.golden ? 'gold' : 'good');
+  say('ברוך ה׳!', 1.4);
+  if (sp.kosher && !saidYosef) { say('זה ליוסף מוקיר שבת', 2); saidYosef = true; }
+  toast(`${sp.name}<small class="num">${f.kg.toFixed(1)} ק״ג</small>`, 1600, f.golden ? 'gold' : 'good');
 }
 function landJunk() {
   const j = junk; junk = null;
   wallet.coins += j.coins; saveWallet();
   toast(`${j.name}${j.coins ? '<small class="num">+' + j.coins + ' ₪</small>' : ''}`, 2000, j.coins >= 50 ? 'gold' : '');
   floats.push({ x: tip.x + 50, y: tip.y + 60, txt: j.coins + ' ₪', t: 0, c: '#ffd75e', big: false, combo: 1 });
-  speech = []; talk = null; say(j.line, 2.8);
   if (j.coins >= 50) sfx.gold(); else sfx.plop();
 }
 function bumpCombo() { const c = $('comboTxt'); c.classList.remove('bump'); void c.offsetWidth; if (combo > 1) c.classList.add('bump'); }
@@ -1474,7 +1494,7 @@ function beginLevel() { ensureAudio(); hideCard(); st = 'ready'; resetRig(); }
 function updateStorm(dt) {
   if (st !== 'menu' && !storm && !stormDone && levelIdx >= 1 && timeLeft < LV.time * 0.75 && timeLeft > 30 && Math.random() < dt * 0.04) {
     storm = { t: 0, dur: rand(16, 22) }; stormDone = true;
-    toast('סערה! הדגים משתוללים', 1800, 'bad'); sfx.thunder();
+    toast('סערה!', 1400, 'bad'); sfx.thunder();
   }
   if (storm) {
     storm.t += dt;
@@ -1518,13 +1538,8 @@ function showMap() {
   showCard(`
     <div class="eyebrow">משחק דיג · ארבעה מקומות</div>
     <h1>חכה לשבת</h1>
-    <p>דייג אחד, חכה אחת, ושולחן שצריך למלא לפני שבת. על כל דג הוא אומר ״ברוך ה׳״. דג כשר נשמר ליוסף מוקיר שבת, ואת השאר מוכרים בשוק. מתחילים עם 100 ₪, ובכפתור ״חנות״ קונים חוט חזק יותר, פיתיון, סליל ורשת. ומי יודע, אולי גם אצלכם תימצא מרגלית בבטן הדג.</p>
-    <dl class="keys">
-      <dt>החזקה ושחרור</dt><dd>טעינת הטלה ושליחת המצוף</dd>
-      <dt>לחיצה כשהמצוף שוקע</dt><dd>הנפה ותפיסת הדג</dd>
-      <dt>החזקה</dt><dd>גלגול החוט אל החוף</dd>
-      <dt>↑ ↓ · גלגלת</dt><dd>עומק הפיתיון · בלם הסליל</dd>
-    </dl>
+    <ol class="how"><li><b>החזיקו ושחררו</b> להטלה</li><li><b>המצוף שוקע?</b> לחצו</li><li><b>החזיקו</b> לגלגל את הדג</li></ol>
+    <p class="howmore">↑ ↓ עומק · גלגלת בלם · ״חנות״ לציוד</p>
     <div class="eyebrow">איפה דגים היום?</div>
     <div class="locs">${cards}</div>
     <div class="eyebrow">אלבום הדגים · ${caught} מתוך ${allSp.length}</div>
@@ -1559,7 +1574,7 @@ function openShop() {
   showCard(`
     <div class="eyebrow">${LOC.name} · המשחק מושהה</div>
     <h2>חנות ציוד</h2>
-    <p>כסף מרוויחים ממכירת דגים לא כשרים בשוק, מבונוס הזמן בסוף כל שלב, ממרגליות ומבקבוקים שנתפסים בקרקעית.</p>
+    <p>כסף מקבלים מדגים לא כשרים, מבונוס זמן וממרגליות.</p>
     <div class="eyebrow">בארנק <span id="shopCoins" class="num">${wallet.coins.toLocaleString('he-IL')} ₪</span></div>
     <canvas id="gearCv" class="gear" width="920" height="240" role="img" aria-label="הציוד שלכם: קנה, סליל, חוט, פיתיון ורשת"></canvas><div class="gearnames" id="gearNames"></div><div class="shop" id="shop">${shopHTML()}</div>
     <button class="btn" id="goBtn" type="button">חזרה לדיג</button>`);
@@ -1709,29 +1724,21 @@ function updateHud() {
   const out = st === 'ready' || st === 'charge' || st === 'swing' || st === 'menu' ? 0 : L / PX;
   setTxt('lineTxt', Math.round(out) + ' מ׳');
 
+  // the hint line only speaks when there is something to do right now
   let h = '', hot = false;
-  if (st === 'ready') h = 'החזיקו לחוץ כדי לטעון הטלה, שחררו כדי להטיל';
-  else if (st === 'charge') h = 'שחררו כשהמד גבוה';
-  else if (st === 'fly') h = flyLock ? 'הסליל נעול' : 'לחיצה עוצרת את הסליל באוויר';
+  if (st === 'ready' && totalCount === 0 && lvCatch.length === 0) h = 'החזיקו ושחררו כדי להטיל';
   else if (st === 'water') {
-    if (engaged && engaged.st === 'bite') { h = 'עכשיו! לחצו להנפה'; hot = true; }
-    else if (engaged && engaged.st === 'nibble') h = 'המצוף רועד. חכו שישקע';
-    else if (junk) h = 'משהו כבד על הקרס. גלגלו פנימה';
-    else if (!bait) h = 'הפיתיון נאכל. גלגלו פנימה ושלחו שוב';
-    else if (stormK > 0.3) h = 'בסערה הדגים רעבים. זה הזמן!';
-    else h = 'ממתינים לנגיסה · החזקה מגלגלת חזרה · ↑↓ עומק';
+    if (engaged && engaged.st === 'bite') { h = 'עכשיו!'; hot = true; }
+    else if (!bait && !junk) h = 'אין פיתיון. גלגלו פנימה';
   }
   else if (st === 'hooked') {
     const f = hooked;
-    if (f.jump === 2) { h = pressed ? 'קפיצה! שחררו את הסליל!' : 'קפיצה! חכו שינחת'; hot = pressed; }
-    else if (pred) { h = 'טורף מתקרב! הביאו את הדג מהר'; hot = true; }
-    else if (overT > 0.05) { h = 'החוט עומד להיקרע! הורידו בלם'; hot = true; }
-    else if (slackT > 1.2) { h = 'החוט רפוי! גלגלו מהר'; hot = true; }
-    else if (f.nearB) { h = 'הדג בסלעים ושוחק את החוט! הרימו אותו'; hot = wear > 0.5; }
-    else if (wear > 0.6) { h = 'החוט כמעט נקרע, סיימו מהר'; hot = true; }
-    else h = `${SP[f.sp].name} נלחם · כוח ${Math.round(f.stam * 100)}% · הביאו אותו אל החוף`;
+    if (f.jump === 2 && pressed) { h = 'שחררו!'; hot = true; }
+    else if (pred) { h = 'טורף!'; hot = true; }
+    else if (overT > 0.05) { h = 'הורידו בלם!'; hot = true; }
+    else if (slackT > 1.2) { h = 'גלגלו!'; hot = true; }
+    else if (f.nearB && wear > 0.4) { h = 'הרימו מהסלעים'; hot = true; }
   }
-  else if (st === 'landed') h = 'לרשת!';
   setTxt('hint', h);
   if (hudCache.hot !== hot) { hudCache.hot = hot; $('hint').classList.toggle('hot', hot); }
   if (hudCache.hh !== !h) { hudCache.hh = !h; $('hint').hidden = !h; }
@@ -2532,7 +2539,6 @@ function render() {
     ctx.font = `${f.big ? 40 : 28}px "Suez One", Georgia, serif`;
     ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(10,20,34,.7)'; ctx.strokeText(f.txt, f.x, f.y);
     ctx.fillStyle = f.c; ctx.fillText(f.txt, f.x, f.y);
-    if (f.combo > 1) { ctx.font = '700 16px Assistant, sans-serif'; ctx.fillStyle = '#ffd75e'; ctx.fillText(`רצף x${f.combo}`, f.x, f.y + 22); }
   }
   ctx.globalAlpha = 1;
 
