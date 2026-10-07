@@ -1101,149 +1101,133 @@ const sfx = {
   voice: () => { tone(330, 300, 0.09, 'triangle', 0.07); setTimeout(() => tone(392, 360, 0.12, 'triangle', 0.07), 100); },
 };
 
-/* ---------- music: an original niggun in Ahava Rabbah mode (D freygish), synthesised live ---------- */
-const NOTE = { D4: 62, Eb4: 63, Fs4: 66, G4: 67, A4: 69, Bb4: 70, C5: 72, D5: 74, Eb5: 75, Fs5: 78, G5: 79, A5: 81 };
-const CHORD = { D: [38, [50, 54, 57]], Gm: [43, [55, 58, 62]], Cm: [36, [48, 51, 55]] };
-const TUNE = [
-  { m: 'A4 D5 D5 C5 Bb4 C5 D5:2 Eb5 D5 C5 Bb4 A4:4 A4 Bb4 C5 Bb4 A4 G4 Fs4:2 G4 A4 Bb4 G4 A4:4', c: 'D Gm Cm D Gm D Gm D' },
-  { m: 'A4 D5 D5 C5 Bb4 C5 D5:2 Eb5 D5 C5 Bb4 A4:2 A4:2 G4 Fs4 G4 A4 Bb4 A4 G4:2 Fs4 Eb4 Fs4 G4 D4:4', c: 'D Gm Cm D Cm Gm Cm D' },
-  { m: 'D5 Fs5 A5:2 G5 Fs5 Eb5:2 D5 Eb5 Fs5 Eb5 D5:4 C5 D5 Eb5 D5 C5 Bb4 A4:2 Bb4 C5 D5 C5 A4:4', c: 'D Cm D D Cm Gm Gm D' },
-  { m: 'D5 Fs5 A5:2 G5 Fs5 Eb5:2 D5 Eb5 Fs5 Eb5 D5:2 D5:2 C5 Bb4 A4 G4 Fs4 G4 A4:2 G4 Fs4 Eb4 Fs4 D4:4', c: 'D Cm D D Cm D Cm D' },
-].map(t => ({ m: t.m.split(/\s+/).map(tok => { const [n, l] = tok.split(':'); return [NOTE[n], +(l || 1)]; }), c: t.c.split(' ') }));
-const ORDER = [0, 1, 0, 1, 2, 3, 2, 3];
-/* Mizrahi tracks: original melodies in Arabic maqamat, with quarter tones (qb = half-flat) */
-const MZ = { C4: 60, D4: 62, Eb4: 63, Eqb4: 63.5, F4: 65, Fs4: 66, G4: 67, A4: 69, Bb4: 70, Bqb4: 70.5, C5: 72, D5: 74, Eb5: 75 };
-const mzParse = str => str.trim().split(/\s+/).map(tok => { const [n, l] = tok.split(':'); return [MZ[n], +(l || 1)]; });
-const RHYTHM = { maqsum: 'DT.TD.T.', baladi: 'DD.TD.T.', ayoub: 'D.kDT.k.' };
-const TRACKS = [
-  { name: 'ניגון שקט', kind: 'niggun' },
-  { name: 'ערב שבת · מקאם חיג׳אז', kind: 'mz', bpm: 100, tonic: 50, drum: 'maqsum', secs: ['A', 'A', 'B', 'A'],
-    A: 'D4 Eb4 Fs4 G4 A4:2 Bb4 A4  G4:2 A4 G4 Fs4:2 Eb4 Fs4  G4 A4 Bb4 C5 D5:2 C5 Bb4  A4 G4 Fs4 Eb4 D4:4',
-    B: 'A4 D5 D5 Eb5 D5:2 C5 Bb4  C5:2 Bb4 A4 Bb4:2 A4 G4  A4 Bb4 C5 Bb4 A4 G4 Fs4 G4  A4:6 Fs4 Eb4' },
-  { name: 'סעודת ליל שבת · מקאם ראסט', kind: 'mz', bpm: 92, tonic: 48, drum: 'baladi', secs: ['A', 'A', 'B', 'A'],
-    A: 'C4 D4 Eqb4 F4 G4:2 F4 Eqb4  D4:2 Eqb4 F4 Eqb4:2 D4 C4  G4 A4 Bqb4 C5 D5:2 C5 Bqb4  A4 G4 F4 Eqb4 D4:2 C4:2',
-    B: 'G4 C5 C5 D5 C5:2 Bqb4 A4  Bqb4:2 A4 G4 A4:2 G4 F4  Eqb4 F4 G4 A4 G4 F4 Eqb4 D4  G4:6 F4 Eqb4' },
-  { name: 'שבת בגליל · מקאם ביאת', kind: 'mz', bpm: 116, tonic: 50, drum: 'ayoub', secs: ['A', 'A', 'B', 'A'],
-    A: 'D4 Eqb4 F4 G4 A4:2 G4 F4  Eqb4 F4 G4 F4 Eqb4:2 D4:2  A4 Bb4 C5 Bb4 A4 G4 F4 G4  A4:2 G4 F4 Eqb4 F4 D4:2',
-    B: 'D5:2 C5 Bb4 A4:2 Bb4 C5  D5 C5 Bb4 A4 G4:2 A4 Bb4  A4 G4 F4 G4 A4 Bb4 A4 G4  F4 Eqb4 F4 G4 A4:4' },
-].map(t => t.kind === 'mz' ? Object.assign(t, { parts: { A: mzParse(t.A), B: mzParse(t.B) } }) : t);
-const MUSIC_KEY = 'hakhaleshabat-music';
-const music = { on: true, track: 0, next: 0, sec: 0, idx: 0, pos: 0, prev: null, own: null, src: null };
-try { const v = JSON.parse(localStorage.getItem(MUSIC_KEY)); if (v === 'off') music.on = false; else if (TRACKS[v]) music.track = v; } catch (e) { /* storage blocked */ }
-let mbus = null, noiseBuf = null;
+/* ---------- music: plucked strings (Karplus-Strong) in a soft room, calm and unhurried ---------- */
+const MUSIC_KEY = 'hakhaleshabat-music2';
+const music = { on: true, track: 0, next: 0, step: 0, own: null, src: null, water: null };
+try { const v = JSON.parse(localStorage.getItem(MUSIC_KEY)); if (v === 'off') music.on = false; else if (Number.isInteger(v) && v >= 0 && v < 4) music.track = v; } catch (e) { /* storage blocked */ }
+let mbus = null;
 const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
-function musicBus() { if (!mbus) { mbus = AC.createGain(); mbus.gain.value = music.on ? 0.38 : 0; mbus.connect(AC.destination); } return mbus; }
-function mvoice(type, m, t, dur, gain, cutoff, vib) {
-  const o = AC.createOscillator(), g = AC.createGain(), f = AC.createBiquadFilter();
-  o.type = type; o.frequency.setValueAtTime(mtof(m), t);
-  if (vib && dur > 0.3) { const l = AC.createOscillator(), lg = AC.createGain(); l.frequency.value = 5.5; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(mtof(m) * 0.012, t + 0.25); l.connect(lg); lg.connect(o.frequency); l.start(t); l.stop(t + dur + 0.05); }
-  f.type = 'lowpass'; f.frequency.value = cutoff;
-  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gain, t + 0.015);
-  g.gain.setValueAtTime(gain, t + dur * 0.75); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  o.connect(f); f.connect(g); g.connect(musicBus()); o.start(t); o.stop(t + dur + 0.02);
+function roomIR() {
+  const len = Math.floor(AC.sampleRate * 2.4), b = AC.createBuffer(2, len, AC.sampleRate);
+  for (let c = 0; c < 2; c++) { const d = b.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2); }
+  return b;
 }
-function mdrumNoise(t, dur, type, freq, q, gain) {
-  if (!noiseBuf) { noiseBuf = AC.createBuffer(1, Math.floor(AC.sampleRate * 0.3), AC.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
-  const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
-  s.buffer = noiseBuf; f.type = type; f.frequency.value = freq; f.Q.value = q;
-  g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  s.connect(f); f.connect(g); g.connect(musicBus()); s.start(t); s.stop(t + dur + 0.02);
+function musicBus() {
+  if (!mbus) {
+    mbus = AC.createGain(); mbus.gain.value = music.on ? 0.55 : 0;
+    const comp = AC.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3;
+    const rev = AC.createConvolver(), wet = AC.createGain(); rev.buffer = roomIR(); wet.gain.value = 0.3;
+    mbus.connect(comp); mbus.connect(rev); rev.connect(wet); wet.connect(comp); comp.connect(AC.destination);
+  }
+  return mbus;
 }
-function mkick(t, gain, f0 = 110, f1 = 45, len = 0.18) {
+// a plucked string, rendered once per note and instrument
+const VOICE = {
+  guitar: { len: 3.2, decay: 0.996, pick: 0.35 },
+  harp: { len: 4.0, decay: 0.998, pick: 0.6 },
+  oud: { len: 2.4, decay: 0.993, pick: 0.85 },
+};
+const ksCache = new Map();
+function ks(m, voice) {
+  const key = voice + m;
+  if (ksCache.has(key)) return ksCache.get(key);
+  const v = VOICE[voice], sr = AC.sampleRate, P = sr / mtof(m) - 0.5, Pi = Math.floor(P), fr = P - Pi;
+  const n = Math.floor(sr * v.len), b = AC.createBuffer(1, n, sr), y = b.getChannelData(0);
+  let lp = 0;
+  for (let i = 0; i < Pi + 2 && i < n; i++) { lp += (Math.random() * 2 - 1 - lp) * v.pick; y[i] = lp; }
+  for (let i = Pi + 2; i < n; i++) {
+    const a = y[i - Pi] * (1 - fr) + y[i - Pi - 1] * fr, c = y[i - Pi - 1] * (1 - fr) + y[i - Pi - 2] * fr;
+    y[i] = v.decay * 0.5 * (a + c);
+  }
+  let pk = 0; for (let i = 0; i < Math.min(n, 6000); i++) pk = Math.max(pk, Math.abs(y[i]));
+  const k = pk ? 0.9 / pk : 1; for (let i = 0; i < n; i++) y[i] *= k;
+  for (let i = 0; i < 400; i++) y[n - 1 - i] *= i / 400;          // no click at the end
+  ksCache.set(key, b);
+  return b;
+}
+function pluck(m, voice, t, gain) {
+  const s = AC.createBufferSource(), g = AC.createGain();
+  s.buffer = ks(m, voice); g.gain.value = gain;
+  s.connect(g); g.connect(musicBus()); s.start(t);
+}
+function pad(ms, t, dur, gain) {
+  for (const m of ms) {
+    const o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.value = mtof(m);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(gain, t + dur * 0.4); g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(musicBus()); o.start(t); o.stop(t + dur + 0.05);
+  }
+}
+function mdum(t, gain) {
   const o = AC.createOscillator(), g = AC.createGain();
-  o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + len * 0.7);
-  g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
-  o.connect(g); g.connect(musicBus()); o.start(t); o.stop(t + len + 0.02);
+  o.frequency.setValueAtTime(92, t); o.frequency.exponentialRampToValueAtTime(55, t + 0.25);
+  g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+  o.connect(g); g.connect(musicBus()); o.start(t); o.stop(t + 0.55);
 }
-// darbuka: dum (low), tek (sharp rim), ka (soft rim)
-function mdrum(sym, t) {
-  if (sym === 'D') { mkick(t, 0.32, 100, 52, 0.3); mdrumNoise(t, 0.04, 'lowpass', 300, 0.7, 0.12); }
-  else if (sym === 'T') mdrumNoise(t, 0.06, 'bandpass', 3400, 1.6, 0.11);
-  else if (sym === 'k') mdrumNoise(t, 0.05, 'bandpass', 3000, 1.6, 0.08);
+// gentle lake water: looped brown noise that rises and falls like small waves
+function waterStart() {
+  if (music.water) return;
+  const sr = AC.sampleRate, len = sr * 6, b = AC.createBuffer(1, len, sr), d = b.getChannelData(0);
+  let br = 0; for (let i = 0; i < len; i++) { br = br * 0.985 + (Math.random() * 2 - 1) * 0.015; d[i] = br * 5; }
+  const fade = sr; for (let i = 0; i < fade; i++) { const w = i / fade; d[len - fade + i] = d[len - fade + i] * (1 - w) + d[i] * w; }
+  const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain(), l = AC.createOscillator(), lg = AC.createGain();
+  s.buffer = b; s.loop = true; f.type = 'lowpass'; f.frequency.value = 650;
+  g.gain.value = 0.22; l.frequency.value = 0.17; lg.gain.value = 0.12; l.connect(lg); lg.connect(g.gain);
+  s.connect(f); f.connect(g); g.connect(musicBus()); s.start(); l.start();
+  music.water = { s, l };
 }
-// oud and qanun: a bright pluck that darkens as it decays
-function mpluck(n, t, gain) {
-  const o = AC.createOscillator(), f = AC.createBiquadFilter(), g = AC.createGain();
-  o.type = 'sawtooth'; o.frequency.setValueAtTime(mtof(n) * 1.01, t); o.frequency.exponentialRampToValueAtTime(mtof(n), t + 0.03);
-  f.type = 'lowpass'; f.frequency.setValueAtTime(3200, t); f.frequency.exponentialRampToValueAtTime(500, t + 0.25); f.Q.value = 2;
-  g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
-  o.connect(f); f.connect(g); g.connect(musicBus()); o.start(t); o.stop(t + 0.72);
+function waterStop() { if (music.water) { try { music.water.s.stop(); music.water.l.stop(); } catch (e) { /* already stopped */ } music.water = null; } }
+
+const hum = () => rand(-0.008, 0.008);
+// 1 · fingerpicked guitar, G major, I–vi–IV–V
+const GTR = { G: [43, 50, 55, 59, 62, 67], Em: [40, 47, 52, 55, 59, 64], C: [48, 52, 55, 60, 64, 67], D: [50, 57, 62, 66, 69], Am: [45, 52, 57, 60, 64] };
+const GTR_PROG = 'G Em C D G Em Am D Em C G D C D G G'.split(' ');
+const GTR_PAT = [[0, 2, 3, 4, 5, 4, 3, 2], [0, 3, 4, 5, 2, 4, 3, 5]];
+function gtrTick(t, k) {
+  const e = 60 / 66 / 2, bar = Math.floor(k / 8), v = GTR[GTR_PROG[bar % GTR_PROG.length]], i = k % 8;
+  pluck(v[Math.min(GTR_PAT[bar % 2][i], v.length - 1)], 'guitar', t + hum(), (i === 0 ? 0.34 : 0.2) * rand(0.85, 1));
+  return e;
 }
-// kamanja-style lead that slides into each note
-function mlead(n, t, dur, prev) {
-  const fr = mtof(n), pf = prev ? mtof(prev) : fr, g = AC.createGain(), f = AC.createBiquadFilter();
-  f.type = 'lowpass'; f.frequency.value = 1900; f.Q.value = 0.7;
-  const l = AC.createOscillator(), lg = AC.createGain();
-  l.frequency.value = 6; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(fr * 0.01, t + Math.min(0.3, dur)); l.connect(lg);
-  for (const det of [-6, 6]) {
-    const o = AC.createOscillator(); o.type = 'sawtooth'; o.detune.value = det;
-    o.frequency.setValueAtTime(pf, t); o.frequency.exponentialRampToValueAtTime(fr, t + Math.min(0.08, dur * 0.3));
-    lg.connect(o.frequency); o.connect(f); o.start(t); o.stop(t + dur + 0.06);
-  }
-  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.022, t + 0.06);
-  g.gain.setValueAtTime(0.022, t + dur * 0.8); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.04);
-  f.connect(g); g.connect(musicBus()); l.start(t); l.stop(t + dur + 0.06);
+// 2 · harp arpeggios with a soft pad, D major
+const HARP = { D: [38, 50, 57, 62, 66, 69, 74, 78], A: [45, 52, 57, 61, 64, 69, 73, 76], Bm: [47, 54, 59, 62, 66, 71, 74, 78], Fsm: [42, 54, 57, 61, 66, 69, 73, 78], G: [43, 55, 59, 62, 67, 71, 74, 79] };
+const HARP_PROG = 'D A Bm Fsm G D G A'.split(' ');
+const HARP_PAT = [0, 3, 4, 5, 6, 7, 6, 5];
+function harpTick(t, k) {
+  const e = 60 / 58 / 2, bar = Math.floor(k / 8), name = HARP_PROG[bar % HARP_PROG.length], v = HARP[name], i = k % 8;
+  pluck(v[HARP_PAT[i]], 'harp', t + hum(), (i === 0 ? 0.3 : 0.17) * rand(0.85, 1));
+  if (i === 0) pad([v[2], v[3], v[4]], t, e * 8.4, 0.012);
+  return e;
 }
-/* a calm, slow niggun in D minor, 3/4: a soft hummed lead over a gentle waltz */
-const CN = { Cs4: 61, D4: 62, E4: 64, F4: 65, G4: 67, A4: 69, Bb4: 70, C5: 72, Cs5: 73, D5: 74, E5: 76, F5: 77 };
-const CALM_CH = { Dm: [38, [50, 53, 57]], Gm: [43, [55, 58, 62]], A: [45, [52, 57, 61]] };
-const CALM = [
-  { m: 'A4:2 D5:2 C5 Bb4  A4:4 G4 A4  Bb4:2 A4:2 G4 F4  E4:4 D4 E4  F4:2 G4:2 A4 Bb4  A4:3 G4 F4 E4  F4:2 E4:2 Cs4 E4  D4:6', c: 'Dm Dm Gm A Dm Gm A Dm' },
-  { m: 'D5:2 F5:2 E5 D5  Cs5:4 A4:2  Bb4:2 D5:2 C5 Bb4  A4:6  G4:2 Bb4:2 A4 G4  F4:3 E4 F4 G4  A4:2 G4:2 E4 Cs4  D4:6', c: 'Dm A Gm Dm Gm Dm A Dm' },
-].map(t => ({ m: t.m.trim().split(/\s+/).map(tok => { const [n, l] = tok.split(':'); return [CN[n], +(l || 1)]; }), c: t.c.split(' ') }));
-const CALM_ORDER = [0, 0, 1, 1];
-// warm hummed voice: sine and triangle together, slow attack, vibrato that arrives late
-function msoft(n, t, dur) {
-  const fr = mtof(n), g = AC.createGain(), f = AC.createBiquadFilter(), l = AC.createOscillator(), lg = AC.createGain();
-  f.type = 'lowpass'; f.frequency.value = 1500;
-  l.frequency.value = 4.8; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(fr * 0.007, t + Math.min(0.6, dur)); l.connect(lg);
-  for (const [type, lvl] of [['sine', 1], ['triangle', 0.5]]) {
-    const o = AC.createOscillator(), og = AC.createGain(); o.type = type; o.frequency.setValueAtTime(fr, t); og.gain.value = lvl;
-    lg.connect(o.frequency); o.connect(og); og.connect(f); o.start(t); o.stop(t + dur + 0.15);
-  }
-  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.045, t + 0.09);
-  g.gain.setValueAtTime(0.045, t + dur * 0.7); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.12);
-  f.connect(g); g.connect(musicBus()); l.start(t); l.stop(t + dur + 0.15);
+// 3 · oud taqsim in Hijaz over a low drone, free and slow
+const OUD = [
+  [62, 1.2], [63, 0.4], [66, 0.4], [67, 0.8], [69, 1.6, 1], [67, 0.4], [66, 0.4], [63, 0.4], [62, 2.0], [0, 0.8],
+  [69, 0.6], [70, 0.4], [69, 0.4], [67, 0.4], [66, 0.8], [67, 0.4], [69, 1.6, 1], [0, 0.8],
+  [74, 1.0, 1], [72, 0.4], [70, 0.4], [69, 0.8], [67, 0.4], [66, 0.4], [63, 0.6], [62, 2.2], [0, 1.2],
+];
+function oudTick(t, k) {
+  const [m, d, trem] = OUD[k % OUD.length];
+  if (k % 9 === 0) { pluck(38, 'oud', t, 0.2); mdum(t, 0.1); }
+  if (!m) return d;
+  pluck(m - 12, 'oud', t + hum(), 0.3 * rand(0.9, 1));
+  if (trem) for (let r = 0.12; r < d - 0.1; r += 0.1) pluck(m - 12, 'oud', t + r, 0.12 * (1 - r / d));
+  return d;
 }
-function niggunTick(now) {
-  const bpm = st === 'hooked' ? 90 : 76, e = 60 / bpm / 2;
-  while (music.next < now + 0.3) {
-    const part = CALM[CALM_ORDER[music.sec % CALM_ORDER.length]], [n, len] = part.m[music.idx], t = music.next;
-    msoft(n, t, len * e * 0.98);
-    for (let k = 0; k < len; k++) {
-      const p = music.pos + k, bar = Math.floor(p / 6) % part.c.length, sub = p % 6, tt = t + k * e;
-      const [root, ch] = CALM_CH[part.c[bar]];
-      if (sub === 0) mvoice('sine', root, tt, e * 2.6, 0.12, 500);
-      else if (sub === 2 || sub === 4) for (const cn of ch) mvoice('triangle', cn, tt, e * 1.5, 0.011, 900);
-    }
-    music.pos += len; music.next += len * e; music.idx++;
-    if (music.idx >= part.m.length) { music.idx = 0; music.pos = 0; music.sec = (music.sec + 1) % CALM_ORDER.length; }
-  }
+// 4 · just the water, with a rare high chime
+function waterTick(t, k) {
+  if (k % 2) pluck([74, 76, 79, 81, 83][Math.floor(Math.random() * 5)], 'harp', t, 0.06);
+  return rand(4, 8);
 }
-function mizrahiTick(tr, now) {
-  const bpm = tr.bpm * (st === 'hooked' ? 1.15 : 1) + stormK * 8, e = 60 / bpm / 2;
-  while (music.next < now + 0.3) {
-    const part = tr.parts[tr.secs[music.sec % tr.secs.length]], [n, len] = part[music.idx], t = music.next;
-    mlead(n, t, len * e * 0.96, music.prev); music.prev = n;
-    mpluck(n - 12, t, 0.05);                                             // oud doubles the tune an octave down
-    if (len >= 4) for (let k = 1; k < len * 2; k++) mpluck(n + 12, t + k * e / 2, 0.022 * (1 - k / (len * 2)));   // qanun tremolo
-    for (let k = 0; k < len; k++) {
-      const p = music.pos + k, step = p % 8, tt = t + k * e;
-      mdrum(RHYTHM[tr.drum][step], tt);
-      mdrumNoise(tt + e / 2, 0.02, 'highpass', 8000, 0.7, 0.01);       // riq jingles
-      if (step === 0) mpluck(tr.tonic, tt, 0.09);
-      else if (step === 4) mpluck(tr.tonic + 7, tt, 0.06);
-    }
-    music.pos += len; music.next += len * e; music.idx++;
-    if (music.idx >= part.length) { music.idx = 0; music.sec = (music.sec + 1) % tr.secs.length; }
-  }
-}
+const TRACKS = [
+  { name: 'גיטרה על המים', tick: gtrTick },
+  { name: 'נבל של שבת', tick: harpTick },
+  { name: 'עוד בערב', tick: oudTick },
+  { name: 'רק המים', tick: waterTick, water: true },
+];
 function musicTick() {
   if (!AC || !music.on || music.track === 'own' || AC.state !== 'running') return;
-  const now = AC.currentTime;
-  if (music.next < now) music.next = now + 0.06;
-  const tr = TRACKS[music.track];
-  if (tr.kind === 'niggun') niggunTick(now); else mizrahiTick(tr, now);
+  const now = AC.currentTime, tr = TRACKS[music.track];
+  if (tr.water) waterStart(); else waterStop();
+  if (music.next < now) music.next = now + 0.1;
+  while (music.next < now + 0.35) music.next += tr.tick(music.next, music.step++);
 }
 // a song the player loads from their own device plays instead; nothing is uploaded
 async function loadSong(file) {
@@ -1262,16 +1246,16 @@ const currentOpt = () => !music.on ? 'off' : music.track;
 const trackName = v => v === 'off' ? 'כבויה' : v === 'own' ? 'השיר שלי' : TRACKS[v].name;
 const trackOptionsHTML = () => musicOptions().map(v => `<option value="${v}">${trackName(v)}</option>`).join('');
 function setTrack(v) {
-  ensureAudio(); stopOwn();
+  ensureAudio(); stopOwn(); waterStop();
   if (v === 'off') music.on = false; else { music.on = true; music.track = v; }
-  music.sec = 0; music.idx = 0; music.pos = 0; music.prev = null; music.next = 0;
-  if (AC) musicBus().gain.setTargetAtTime(music.on ? 0.38 : 0, AC.currentTime, 0.05);
+  music.step = 0; music.next = 0;
+  if (AC) musicBus().gain.setTargetAtTime(music.on ? 0.55 : 0, AC.currentTime, 0.05);
   if (music.on && v === 'own') playOwn();
   try { localStorage.setItem(MUSIC_KEY, JSON.stringify(v === 'own' ? 0 : v)); } catch (e) { /* storage blocked */ }
   updMusicBtn();
 }
 function updMusicBtn() {
-  $('musicBtn').textContent = 'מוזיקה: ' + (music.on && music.track !== 'own' ? TRACKS[music.track].name.split(' · ')[0] : trackName(currentOpt()));
+  $('musicBtn').textContent = 'מוזיקה: ' + trackName(currentOpt());
   const s = $('trackSel'); if (s) s.value = String(currentOpt());
 }
 $('musicBtn').onclick = () => { const o = musicOptions(), i = o.indexOf(currentOpt()); setTrack(o[(i + 1) % o.length]); };
