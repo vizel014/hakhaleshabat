@@ -142,6 +142,9 @@ button:focus-visible,.btn:focus-visible,.loc:focus-visible{outline:2px solid var
 .how li{counter-increment:s;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid var(--edge);border-radius:6px;padding:8px 12px;font-size:15px}
 .how li::before{content:counter(s);display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--bob);color:#1d0c06;font-weight:800;font-size:13px}
 .howmore{font-size:13px!important;color:var(--muted)!important;margin:0 0 14px!important}
+.linkbtn{background:none;border:0;padding:0;margin:0 0 14px;color:var(--gold);font:700 15px var(--body);text-decoration:underline;cursor:pointer}
+.linkbtn:focus-visible{outline:2px solid var(--bob);outline-offset:2px}
+a.btn{text-decoration:none}
 .table-img{width:100%;height:auto;border-radius:6px;margin:4px 0 12px;display:block}
 .sel{font:600 15px var(--body);background:#0b1626;color:var(--cream);border:1px solid var(--edge);border-radius:4px;padding:7px 10px;max-width:100%}
 .sel:focus-visible{outline:2px solid var(--bob);outline-offset:2px}
@@ -490,7 +493,7 @@ function setVel(p, vx, vy) { p.px = p.x - vx * DT; p.py = p.y - vy * DT; }
 function addVel(p, vx, vy) { p.px -= vx * DT; p.py -= vy * DT; }
 function vel(p) { return { x: (p.x - p.px) / DT, y: (p.y - p.py) / DT }; }
 function addShake(a) { if (!RM) shake = Math.max(shake, a); }
-function say(txt, dur) { speech.push({ txt, dur }); }
+function say(txt, dur, voice) { speech.push({ txt, dur, voice }); }
 
 /* ---------- casting pose: wind up over the shoulder, whip forward, follow through ---------- */
 let swingT = 0, castCharge = 0, followT = 0, netGrip = null;
@@ -694,6 +697,7 @@ function step(dt) {
     if (st === 'landed' && landed) ay += Math.min(landed.kg, 6) * KGF * tip.w * 0.35;
     integ(tip, -ROD_K * (tip.x - tr.x) - ROD_C * v.x, ay, 0, 0, dt); rodLimit(); }
 
+  if (st === 'overboard') { const r = tipRest(); setP(tip, r.x, r.y); lam = 0; tension = 0; return; }
   if (st === 'landed') { lam = 0; tension = 0; return; }
 
   if (!hooked) {
@@ -851,7 +855,7 @@ function hookFish(f) {
   engaged = null; hooked = f; f.st = 'hooked'; f.stam = 1; f.runT = 0; f.jump = 0; f.jumpCD = rand(1.2, 3);
   hook.w = 1 / (0.03 + f.kg);
   L = dist(tip, hook) + 2;
-  st = 'hooked'; overT = 0; slackT = 0; fightT = 0;
+  st = 'hooked'; overT = 0; slackT = 0; fightT = 0; pullT = 0;
   f.ang = Math.atan2(hook.y - tip.y, hook.x - tip.x);
   if (SP[f.sp].teeth) { toast(`${SP[f.sp].name}!`, 1400, 'bad'); addShake(SP[f.sp].boss ? 10 : 5); }
   else if (f.golden) toast('דג זהב!', 1300, 'gold');
@@ -1102,8 +1106,8 @@ const sfx = {
 };
 
 /* ---------- music: plucked strings (Karplus-Strong) in a soft room, calm and unhurried ---------- */
-const MUSIC_KEY = 'hakhaleshabat-music2';
-const music = { on: true, track: 0, next: 0, step: 0, own: null, src: null, water: null };
+const MUSIC_KEY = 'hakhaleshabat-music3';
+const music = { on: true, track: 3, next: 0, step: 0, own: null, src: null, water: null };
 try { const v = JSON.parse(localStorage.getItem(MUSIC_KEY)); if (v === 'off') music.on = false; else if (Number.isInteger(v) && v >= 0 && v < 4) music.track = v; } catch (e) { /* storage blocked */ }
 let mbus = null;
 const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
@@ -1261,6 +1265,62 @@ function updMusicBtn() {
 $('musicBtn').onclick = () => { const o = musicOptions(), i = o.indexOf(currentOpt()); setTrack(o[(i + 1) % o.length]); };
 updMusicBtn();
 
+/* ---------- the real story, retold briefly, with a link to the source ---------- */
+const STORY_URL = 'https://www.sefaria.org.il/Shabbat.119a.5?lang=he';
+function showStory(back) {
+  showCard(`
+    <div class="eyebrow">תלמוד בבלי · מסכת שבת, דף קיט ע״א</div>
+    <h2>יוסף מוקיר שבת</h2>
+    <p>בגמרא מסופר על יוסף, שקראו לו ״מוקיר שבת״ כי בכל ערב שבת קנה לכבוד השבת את הטוב ביותר שמצא בשוק.</p>
+    <p>בשכונה שלו גר נכרי עשיר מאוד. חוזי הכוכבים אמרו לעשיר שכל הנכסים שלו יגיעו בסוף ליוסף. כדי שזה לא יקרה, הוא מכר את כל רכושו, קנה בכסף מרגלית אחת יקרה ותפר אותה לכובע שלו.</p>
+    <p>כשעבר במעבורת על הנהר, הרוח העיפה את הכובע למים, ודג גדול בלע אותו. הדייגים תפסו את הדג והביאו אותו לשוק בערב שבת, סמוך לחשיכה. ״מי יקנה דג כזה עכשיו?״ שאלו. אמרו להם: ״לכו ליוסף מוקיר שבת, הוא תמיד קונה לכבוד שבת.״ יוסף קנה את הדג, פתח אותו ומצא בתוכו את המרגלית. הוא מכר אותה בשלוש עשרה עליות של דינרי זהב.</p>
+    <p>פגש אותו זקן אחד ואמר: <b>״מאן דיזיף שבתא, פרעיה שבתא״</b>. מי שמוציא כסף לכבוד שבת, השבת מחזירה לו.</p>
+    <div class="btns"><button class="btn" id="goBtn" type="button">חזרה</button><a class="btn ghost" href="${STORY_URL}" target="_blank" rel="noopener">לסיפור המקורי בגמרא</a></div>`);
+  $('goBtn').onclick = back;
+}
+
+/* ---------- the angler speaks aloud when the browser has a Hebrew voice ---------- */
+let heVoice = null;
+function pickVoice() { try { heVoice = speechSynthesis.getVoices().find(v => /^(he|iw)/i.test(v.lang)) || null; } catch (e) { heVoice = null; } }
+if ('speechSynthesis' in window) { pickVoice(); try { speechSynthesis.onvoiceschanged = pickVoice; } catch (e) { /* not supported */ } }
+function speak(text) {
+  if (muted || !heVoice) return false;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = heVoice.lang; u.voice = heVoice; u.rate = 0.95; u.pitch = 0.85; u.volume = 1;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+    return true;
+  } catch (e) { return false; }
+}
+
+/* ---------- a shark can pull the angler off the pier ---------- */
+let overboard = null, pullT = 0;
+function goOverboard() {
+  const f = hooked; hooked = null; if (f) releaseFish(f, true);
+  if (bob.y > SURF - 30) lostBobs.push({ x: bob.x, vx: rand(4, 14), t: 7 });
+  hook.w = 1 / 0.03; st = 'overboard'; overboard = { t: 0, splashed: false }; pressed = false; pullT = 0;
+  combo = 1; bumpCombo(); sfx.snap(); addShake(14);
+  speech = []; talk = null; say('אוי ואבוי!', 1.4, 'אוי ואבוי');
+  toast('הכריש משך אותך למים!', 1800, 'bad');
+}
+function updateOverboard(dt) {
+  const o = overboard; o.t += dt;
+  if (!o.splashed && o.t > 0.75) { o.splashed = true; splash(SHORE + 40, 1.8); sfx.splash(1.2); addShake(8); }
+  if (o.t > 3.2) { overboard = null; st = 'ready'; resetRig(); }
+}
+function drawAnglerScene() {
+  if (!overboard) { drawAngler(); return; }
+  const k = Math.min(1, overboard.t / 0.8), hx = SHORE - 118, hy = SURF - 58;
+  const ox = 158 * k, oy = k < 1 ? 80 * k * k - 95 * Math.sin(Math.PI * k) : 80 + Math.sin(overboard.t * 3) * 3;
+  const rot = k < 1 ? k * 1.5 : 0.25 + Math.sin(overboard.t * 2) * 0.1;
+  ctx.save();
+  if (k >= 1) { ctx.beginPath(); ctx.rect(-M, -M, VW + 2 * M, surfAt(hx + ox) + M); ctx.clip(); }
+  ctx.translate(hx + ox, hy + oy); ctx.rotate(rot); ctx.translate(-hx, -hy);
+  drawAngler();
+  ctx.restore();
+  if (k >= 1 && Math.random() < 0.08) ripples.push({ x: hx + ox + rand(-10, 10), r: 3, a: 0.6 });
+}
+
 /* ---------- game flow ---------- */
 function update(dt) {
   time += dt;
@@ -1318,6 +1378,11 @@ function update(dt) {
       else if (hook.x < SHORE + 200 + 50 * tier('net') && hook.y - surfAt(hook.x) < 70 + 20 * tier('net') && f.jump !== 2 && (f.kg < 3 || f.stam < 0.6)) landFish(f);
     }
   }
+  if (st === 'hooked' && hooked.sp === 'shark') {
+    if (hooked.surge > 0 && pressed) pullT += dt * (0.6 + drag / lineKg); else pullT = Math.max(0, pullT - dt * 0.4);
+    if (pullT > 1.1) goOverboard();
+  }
+  if (st === 'overboard') updateOverboard(dt);
   updatePred(dt);
   if (st === 'landed') {
     landT += dt;
@@ -1325,7 +1390,7 @@ function update(dt) {
   }
   if (active && timeLeft <= 0 && (st === 'ready' || st === 'charge' || st === 'swing' || st === 'fly' || st === 'water')) levelFail();
 
-  if (!talk && speech.length) { talk = Object.assign({ t: 0 }, speech.shift()); sfx.voice(); }
+  if (!talk && speech.length) { talk = Object.assign({ t: 0 }, speech.shift()); if (!speak(talk.voice || talk.txt)) sfx.voice(); }
   if (talk && (talk.t += dt) > talk.dur) talk = null;
   updateStorm(dt);
   musicTick();
@@ -1362,6 +1427,7 @@ function update(dt) {
   let tz = 1, tx = VW / 2, ty = VH / 2;
   if (!RM) {
     if (st === 'hooked') { tz = clamp(VW / (hook.x + 110 - (SHORE - 200)), 1, hooked && SP[hooked.sp].boss ? 1.1 : 1.16); tx = (tip.x + hook.x) / 2; ty = (tip.y + hook.y) / 2 + 30; }
+    else if (st === 'overboard') { tz = 1.15; tx = SHORE + 60; ty = SURF - 20; }
     else if (st === 'landed') { tz = 1.22; tx = tip.x + 20; ty = tip.y + 90; }
     else if (st === 'water' && engaged && engaged.st === 'bite') { tz = clamp(VW / (bob.x + 110 - (SHORE - 200)), 1, 1.08); tx = bob.x; ty = bob.y; }
   }
@@ -1418,8 +1484,9 @@ function landFish(f) {
   if (f.golden || sp.boss) sfx.gold(); else sfx.win();
   pearlFx = pearl ? { t: 0 } : null;
   speech = []; talk = null;
-  say('ברוך ה׳!', 1.4);
-  if (sp.kosher && !saidYosef) { say('זה ליוסף מוקיר שבת', 2); saidYosef = true; }
+  say('ברוך ה׳!', 1.4, 'ברוך השם');
+  if (pearl) say('מאן דיזיף שבתא, פרעיה שבתא!', 2.6);
+  else if (sp.kosher && !saidYosef) { say('זה ליוסף מוקיר שבת', 2); saidYosef = true; }   // once per place
   toast(`${sp.name}<small class="num">${f.kg.toFixed(1)} ק״ג</small>`, 1600, f.golden ? 'gold' : 'good');
 }
 function landJunk() {
@@ -1459,7 +1526,7 @@ function prepLevel(i) {
   fishes = []; bubbles = []; drops = []; ripples = []; foam = []; sparks = []; floats = []; lostBobs = []; speech = []; talk = null;
   engaged = null; hooked = null; landed = null; pred = null; predCD = 0; snapFx = null;
   corm.st = 'off'; corm.t = rand(10, 18);
-  storm = null; stormDone = false; stormK = 0; pearlFx = null; saidYosef = false; saidMarket = false;
+  storm = null; stormDone = false; stormK = 0; pearlFx = null; saidMarket = false;
   for (let k = 0; k < 10; k++) spawnFish(false);
   buildSchool();
   st = 'menu'; resetRig();
@@ -1524,13 +1591,15 @@ function showMap() {
     <h1>חכה לשבת</h1>
     <ol class="how"><li><b>החזיקו ושחררו</b> להטלה</li><li><b>המצוף שוקע?</b> לחצו</li><li><b>החזיקו</b> לגלגל את הדג</li></ol>
     <p class="howmore">↑ ↓ עומק · גלגלת בלם · ״חנות״ לציוד</p>
+    <button class="linkbtn" id="storyBtn" type="button">מי היה יוסף מוקיר שבת?</button>
     <div class="eyebrow">איפה דגים היום?</div>
     <div class="locs">${cards}</div>
     <div class="eyebrow">אלבום הדגים · ${caught} מתוך ${allSp.length}</div>
     <div class="album">${album}</div>
     <div class="songrow"><label for="trackSel">מוזיקה ברקע</label><select id="trackSel" class="sel">${trackOptionsHTML()}</select><button class="btn ghost" id="songBtn" type="button">טעינת שיר מהמכשיר</button><input type="file" id="songFile" accept="audio/*" hidden><span id="songMsg">${music.own ? 'השיר שלכם מתנגן ברקע' : 'או נגנו קובץ שמע מהמכשיר שלכם'}</span></div>`, true);
-  for (const b of $('card').querySelectorAll('[data-loc]')) b.onclick = () => { ensureAudio(); score = 0; totalKg = 0; totalCount = 0; best = null; runCatch = []; setLocation(b.dataset.loc); showLevelIntro(0); };
+  for (const b of $('card').querySelectorAll('[data-loc]')) b.onclick = () => { ensureAudio(); score = 0; totalKg = 0; totalCount = 0; best = null; runCatch = []; saidYosef = false; setLocation(b.dataset.loc); showLevelIntro(0); };
   $('songBtn').onclick = () => { ensureAudio(); $('songFile').click(); };
+  $('storyBtn').onclick = () => showStory(showMap);
   $('songFile').onchange = e => { const f = e.target.files && e.target.files[0]; if (f) loadSong(f); };
   $('trackSel').value = String(currentOpt());
   $('trackSel').onchange = e => { const v = e.target.value; setTrack(v === 'off' || v === 'own' ? v : +v); };
@@ -1651,8 +1720,10 @@ function levelDone() {
       <h1>השולחן מוכן לשבת</h1>
       <img class="table-img" alt="שולחן שבת עם נרות דולקים, חלות, גביע קידוש ודג על צלחת" src="${shabbatTable()}">
       <p>${fmtKg(kKg)} ק״ג דגים כשרים לכבוד שבת${pearls === 1 ? ', ומרגלית אחת שנמצאה בבטן דג' : pearls ? `, ו־${pearls} מרגליות שנמצאו בבטן הדגים` : ''}. ${score.toLocaleString('he-IL')} נקודות, ובארנק ${wallet.coins.toLocaleString('he-IL')} ₪.</p>
-      <div class="btns"><button class="btn" id="goBtn" type="button">למקום אחר</button><button class="btn ghost" id="againBtn" type="button">שוב ${LOC.name}</button></div>`);
+      <div class="btns"><button class="btn" id="goBtn" type="button">למקום אחר</button><button class="btn ghost" id="againBtn" type="button">שוב ${LOC.name}</button></div>
+      <button class="linkbtn" id="storyBtn" type="button" style="margin-top:14px">הסיפור של יוסף מוקיר שבת</button>`);
     $('goBtn').onclick = showMap;
+    $('storyBtn').onclick = () => showStory(showMap);
     $('againBtn').onclick = () => { totalKg = 0; totalCount = 0; best = null; score = 0; runCatch = []; showLevelIntro(0); };
   } else {
     showCard(`
@@ -1717,7 +1788,8 @@ function updateHud() {
   }
   else if (st === 'hooked') {
     const f = hooked;
-    if (f.jump === 2 && pressed) { h = 'שחררו!'; hot = true; }
+    if (pullT > 0.3) { h = 'שחררו! הכריש מושך'; hot = true; }
+    else if (f.jump === 2 && pressed) { h = 'שחררו!'; hot = true; }
     else if (pred) { h = 'טורף!'; hot = true; }
     else if (overT > 0.05) { h = 'הורידו בלם!'; hot = true; }
     else if (slackT > 1.2) { h = 'גלגלו!'; hot = true; }
@@ -2259,13 +2331,8 @@ function ik(sx, sy, hx, hy, l1, l2, bend) {
   const ang = Math.atan2(dy, dx) + bend * Math.acos(clamp((l1 * l1 + d * d - l2 * l2) / (2 * l1 * d), -1, 1));
   return { x: sx + Math.cos(ang) * l1, y: sy + Math.sin(ang) * l1 };
 }
-function drawAngler() {
-  const Y0 = SURF - 34, x = SHORE - 118, B = rodBase(), a = restAngle(), p = castPose();
-  const lean = st === 'hooked' ? clamp(tension / lineKg, 0, 1) * 7 : 0;
-  const breath = Math.sin(time * 1.6) * 0.8;
-  const joy = talk && st === 'ready' ? Math.min(1, talk.t * 4) : 0;
-  const skin = '#c8936a', skinD = '#a8744e', shirt = '#efeadf', vest = '#7f7350', vestD = '#655b3e', pants = '#353a44', hat = '#e9dfbd';
-
+function drawProps() {
+  const Y0 = SURF - 34, x = SHORE - 118;
   // bucket of the day's catch
   const bx = SHORE - 175, byy = LOC.scene === 'sea' ? Y0 - 4 : Y0;
   ctx.fillStyle = '#8b9299'; ctx.beginPath(); ctx.moveTo(bx - 13, byy - 26); ctx.lineTo(bx + 13, byy - 26); ctx.lineTo(bx + 9, byy); ctx.lineTo(bx - 9, byy); ctx.closePath(); ctx.fill();
@@ -2282,6 +2349,14 @@ function drawAngler() {
     ctx.strokeStyle = '#3a2a1c'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x - 12, Y0); ctx.lineTo(x + 10, Y0 - 19); ctx.moveTo(x + 12, Y0); ctx.lineTo(x - 10, Y0 - 19); ctx.stroke();
     ctx.fillStyle = '#2f5a4a'; ctx.fillRect(x - 14, Y0 - 22, 28, 5);
   }
+}
+function drawAngler() {
+  const Y0 = SURF - 34, x = SHORE - 118, B = rodBase(), a = restAngle(), p = castPose();
+  const lean = st === 'hooked' ? clamp(tension / lineKg, 0, 1) * 7 : 0;
+  const breath = Math.sin(time * 1.6) * 0.8;
+  const joy = talk && st === 'ready' ? Math.min(1, talk.t * 4) : 0;
+  const skin = '#c8936a', skinD = '#a8744e', shirt = '#efeadf', vest = '#7f7350', vestD = '#655b3e', pants = '#353a44', hat = '#e9dfbd';
+
   // the whole upper body winds back, throws forward and leans against a fish
   const sway = (p < 0 ? p * 9 : p * 8) - lean;
   const hipX = x, hipY = Y0 - 24;
@@ -2456,7 +2531,7 @@ function render() {
 
   if (hooked) drawFishFast(hooked.sp, hooked.len, hooked.x, hooked.y, hooked.tilt, hooked.fs, hooked.ph, hooked.golden);
 
-  if (st !== 'landed') {
+  if (st !== 'landed' && st !== 'overboard') {
     if (hooked) drawLine(tip.x, tip.y, hook.x, hook.y, L - dist(tip, hook));
     else { drawLine(tip.x, tip.y, bob.x, bob.y - 8, st === 'fly' ? 0 : L - dist(tip, bob)); drawHook(); if (junk) drawJunk(hook.x, hook.y + 8); }
     const v = vel(bob), tilt = hooked ? Math.atan2(tip.x - hook.x, hook.y - tip.y) * 0.5 : clamp((v.x - flow()) * 0.002, -0.5, 0.5);
@@ -2478,7 +2553,8 @@ function render() {
     ctx.stroke();
   }
   drawPier();
-  drawAngler();
+  drawProps();
+  drawAnglerScene();
   drawCorm(false);
   if (st === 'landed' && landed) {
     const sw = Math.sin(time * 9) * 0.35;
